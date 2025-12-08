@@ -20,10 +20,28 @@ const paymentRoutes = require('./routes/payments');
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://the-coloring-bliss-front-end.vercel.app',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+// CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://the-coloring-bliss-front-end.vercel.app/',
-  credentials: true
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc)
+    if (!origin) return callback(null, true);
+    
+    // Allow all origins in production for now
+    callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -74,7 +92,7 @@ const connectDB = async () => {
 };
 
 // Start server
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
   app.listen(PORT, () => {
