@@ -8,14 +8,21 @@ const Product = require('../models/Product');
  */
 const getCategories = async (req, res) => {
   try {
+    // Get all categories
     const categories = await Category.find({ isActive: true })
       .sort('displayOrder name')
-      .populate('subcategories')
+      .lean();
+
+    // Structure: return all categories, frontend will handle grouping
+    // Also populate parent info for subcategories
+    const categoriesWithParent = await Category.find({ isActive: true })
+      .sort('displayOrder name')
+      .populate('parent', 'name slug')
       .lean();
 
     res.json({
       success: true,
-      data: { categories }
+      data: { categories: categoriesWithParent }
     });
   } catch (error) {
     console.error('Get categories error:', error);
